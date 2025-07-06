@@ -1,0 +1,64 @@
+
+Practica 3
+
+
+---------------Para la instalacion y configuracion del httpd----------------------
+
+sudo dnf install httpd
+sudo nano /var/www/html/servidores
+sudo nano /etc/httpd/conf/httpd.conf
+
+
+
+
+-----------------Habilitar puertos en firewall-----------------------
+
+
+sudo firewall-cmd --add-port=8888/tcp --permanent
+firewall-cmd --reload
+sudo firewall-cmd --list-all
+
+
+
+//habilitar puertos en http//
+sudo semanage port -a -t http_port_t -p tcp 8888
+sudo semanage port -l | grep http_port_t
+sudo systemctl restart httpd
+
+
+
+
+-----------------Instalación y configuración del keepalived---------------
+
+sudo dnf install keepalived
+sudo nano /etc/keepalived/keepalived.conf
+
+
+
+
+
+--------------------Configuración keepalived----------------------------------
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface eth0  # Cambiar por tu interfaz de red (ip a)
+    virtual_router_id 51
+    priority 50     # Prioridad más baja = BACKUP
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+    virtual_ipaddress {
+        10.0.0.100/24  # IP flotante (VIP)
+    }
+}
+
+
+
+
+
+
+
+
+
