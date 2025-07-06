@@ -1,0 +1,40 @@
+
+//Eliminar
+
+sudo pcs cluster stop --all || true
+sudo pcs cluster destroy || true
+sudo rm -f /etc/corosync/corosync.conf
+sudo systemctl stop pacemaker corosync pcsd
+sudo systemctl disable pacemaker corosync pcsd
+sudo systemctl enable pcsd --now
+
+
+
+
+
+# ---------- EN AMBAS VMs (primero VM1, luego VM2) ----------
+sudo dnf config-manager --set-enabled highavailability
+sudo dnf install -y pacemaker pcs psmisc
+sudo firewall-cmd --permanent --add-service=high-availability
+sudo firewall-cmd --reload
+sudo systemctl enable pcsd --now
+echo "12345" | sudo passwd --stdin hacluster
+
+
+# ---------- SOLO EN VM1 (Nodo principal) - Ejecutar 1 a 1 ----------
+sudo pcs host auth 10.0.0.217 10.0.0.216 -u hacluster -p 12345
+sudo pcs cluster setup pacemaker1 10.0.0.217 10.0.0.216
+sudo pcs cluster start --all
+sudo pcs cluster enable --all
+
+
+# ---------- EN AMBAS VMs (verificar estado) ----------
+sudo pcs status
+
+# ---------- SOLO EN VM1 (configuración final) ----------
+sudo pcs property set stonith-enabled=false
+sudo pcs resource create ClusterIP ocf:heartbeat:IPaddr2 ip=10.0.0.100 cidr_netmask=24 op monitor interval=30s
+
+
+# ---------- EN HOST (comprobación) ----------
+# ping 10.0.0.100 -t
