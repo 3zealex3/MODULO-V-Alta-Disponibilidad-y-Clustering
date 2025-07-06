@@ -1,0 +1,77 @@
+cd .ssh
+ls
+sudo nano authorized_keys 
+cd ..
+ls
+mkdir folder
+touch hola{1..100}.txt
+ls
+rm hola{1..100}.txt
+ls
+clear
+ls
+cd folder/
+ls
+touch hola{1..100}.txt
+ls
+cd ..
+ls
+clear
+ls
+sudo nano script.sh
+chmod +x script.sh 
+sudo chmod +x script.sh 
+ls -a
+ls -l
+sudo nano script.sh 
+ls
+sudo /etc/crontab
+sudo nano /etc/crontab
+crontab -e
+ls
+sudo systemctl restart crond
+ls
+crontab -e
+ls
+sudo systemctl restart crond
+clear
+ls
+crontab -e
+sudo nano /etc/crontab
+sudo systemctl restart crond
+crontab -e
+sudo systemctl restart crond
+crontab -e
+ls
+./script.sh 
+crontab -e
+ls
+crontab -e
+clear
+ls
+sudo systemctl restart crond
+sudo systemctl enable --now crond
+sudo systemctl crond
+sudo systemctl status crond
+clear
+crontab -e
+crontab -l
+crontab -e
+crontab -l
+ls
+sudo crontab -e
+ls
+crontab -l
+crontab -e
+ls
+clear
+ls
+crontab -e
+ls
+crontab -l
+ls
+crontab -e
+ls
+sudo nano /etc/crontab
+clear
+history
