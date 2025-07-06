@@ -2,12 +2,24 @@
 Practica 3
 
 
+
 ---------------Para la instalacion y configuracion del httpd----------------------
 
 sudo dnf install httpd
 sudo nano /var/www/html/servidores
 sudo nano /etc/httpd/conf/httpd.conf
 
+
+
+-----------------Instalación y configuración del keepalived---------------
+
+sudo dnf install keepalived
+sudo nano /etc/keepalived/keepalived.conf
+
+
+---------------Iniciar servicios-----------------------
+sudo systemctl start keepalived
+sudo systemctl start httpd
 
 
 
@@ -23,18 +35,6 @@ sudo firewall-cmd --list-all
 //habilitar puertos en http//
 sudo semanage port -a -t http_port_t -p tcp 8888
 sudo semanage port -l | grep http_port_t
-sudo systemctl restart httpd
-
-
-
-
------------------Instalación y configuración del keepalived---------------
-
-sudo dnf install keepalived
-sudo nano /etc/keepalived/keepalived.conf
-
-
-
 
 
 --------------------Configuración keepalived----------------------------------
@@ -53,6 +53,8 @@ vrrp_instance VI_1 {
         10.0.0.100/24  # IP flotante (VIP)
     }
 }
+
+
 
 
 
