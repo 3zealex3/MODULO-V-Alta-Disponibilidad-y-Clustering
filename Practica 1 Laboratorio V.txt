@@ -1,77 +1,79 @@
-cd .ssh
+--------------1. Instalación de Rsync (en ambos servidores)-----------------
+
+sudo dnf install rsync -y
+
+---------------Configuración SSH sin contraseña------------------------
+
+ssh-keygen -t ed25519 -C "QLOK"  # Presionar Enter para todas las opciones
+
+
+---------------Copiar clave al servidor secundario:----------------
+
+ssh-copy-id eze-20242286@<IP-del-servidor-secundario>
+
+
+-------------Crear carpetas y archivos de prueba------------------------
+
+mkdir ~/archivos
+cd ~/archivos
+touch ArchivoEze{1..100}.txt  # 100 archivos de prueba
 ls
-sudo nano authorized_keys 
-cd ..
-ls
-mkdir folder
-touch hola{1..100}.txt
-ls
-rm hola{1..100}.txt
-ls
-clear
-ls
-cd folder/
-ls
-touch hola{1..100}.txt
-ls
-cd ..
-ls
-clear
-ls
-sudo nano script.sh
-chmod +x script.sh 
-sudo chmod +x script.sh 
-ls -a
-ls -l
-sudo nano script.sh 
-ls
-sudo /etc/crontab
-sudo nano /etc/crontab
+
+-----------------------------En el servidor secundario:---------------
+
+mkdir ~/sync
+
+
+--------------------Sincronización manual inicial-----------------------
+
+rsync -avz ~/archivos/ eze-20242286@10.0.0.218:~/sync/
+
+
+-------------Verificación en el servidor secundario:--------------
+cd ~/sync
+ls  # Deben aparecer los 100 archivos
+
+
+--------------------Automatización con Script y Cron-----------------
+
+----------Crear script de sincronización:------------
+nano ~/script_sync.sh
+
+Añadir:
+
+#!/bin/bash
+rsync -avz --delete ~/archivos/ eze-20242286@10.0.0.218:~/sync/
+
+
+-----------Dar permisos de ejecución:-----------------
+
+chmod +x ~/script_sync.sh
+
+-------------Programar en Cron:--------------------------
 crontab -e
-ls
+
+--------------Añadir esta línea (para ejecutar cada minuto):--------------------
+
+* * * * * /home/eze-20242286/script_sync.sh >> /home/eze-20242286/sync.log 2>&1
+
+
+----------------Reiniciar el servicio Cron:---------------------
+
 sudo systemctl restart crond
+
+----------------Prueba de funcionamiento--------------------
+
+Crear nuevos archivos en el servidor principal:
+
+cd ~/archivos
+touch Castillo{1..10}.txt
+
+
+--------Verificar sincronización en el servidor secundario (después de 1 minuto):--------
+
+cd ~/sync
 ls
-crontab -e
-ls
-sudo systemctl restart crond
-clear
-ls
-crontab -e
-sudo nano /etc/crontab
-sudo systemctl restart crond
-crontab -e
-sudo systemctl restart crond
-crontab -e
-ls
-./script.sh 
-crontab -e
-ls
-crontab -e
-clear
-ls
-sudo systemctl restart crond
-sudo systemctl enable --now crond
-sudo systemctl crond
-sudo systemctl status crond
-clear
-crontab -e
-crontab -l
-crontab -e
-crontab -l
-ls
-sudo crontab -e
-ls
-crontab -l
-crontab -e
-ls
-clear
-ls
-crontab -e
-ls
-crontab -l
-ls
-crontab -e
-ls
-sudo nano /etc/crontab
-clear
-history
+
+----------Ver logs de sincronización:--------------
+
+cat ~/sync.log
