@@ -1,66 +1,90 @@
+# Instalamos Apache
+sudo dnf install -y httpd
 
-Practica 3
+# Creamos el archivo HTML de prueba
+echo "<h1>Servidor 1 - IP: "ip del servidor"/h1>" | sudo tee /var/www/html/servidores
+echo "<h1>Servidor 2 - IP: "ip del servidor"</h1>" | sudo tee /var/www/html/servidores
 
+----------------No. 1 # Editamos configuración de Apache para puerto 8888-----------------------------
+sudo sed -i 's/^Listen .*/Listen 8888/' /etc/httpd/conf/httpd.conf
 
+-----------------No.2---------------------------------
 
----------------Para la instalacion y configuracion del httpd----------------------
-
-sudo dnf install httpd
-sudo nano /var/www/html/servidores
+--------------Abrir el archivo de configuración de Apache-------
 sudo nano /etc/httpd/conf/httpd.conf
 
+---------------------Buscar la línea que diga algo como:---------------------
+Listen 80
+
+----------------Cambiarla por:----------------------
+Listen 8888
+
+---------------Si quieres que escuche en varios puertos, puedes añadir más líneas, por ejemplo:-----------------------
+Listen 8888
+Listen 80
 
 
------------------Instalación y configuración del keepalived---------------
-
-sudo dnf install keepalived
-sudo nano /etc/keepalived/keepalived.conf
-
-
----------------Iniciar servicios-----------------------
-sudo systemctl start keepalived
-sudo systemctl start httpd
-
-
-
------------------Habilitar puertos en firewall-----------------------
-
-
+------------------------# Abrimos el puerto 8888 en firewall---------------------------------
 sudo firewall-cmd --add-port=8888/tcp --permanent
-firewall-cmd --reload
+sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
 
-
-
-//habilitar puertos en http//
+----------------------# Permitimos puerto 8888 en SELinux-------------------------------------
 sudo semanage port -a -t http_port_t -p tcp 8888
 sudo semanage port -l | grep http_port_t
 
+-----------------------# Habilitamos y arrancamos Apache----------------------------------------
+sudo systemctl enable httpd
+sudo systemctl start httpd
+sudo systemctl status httpd
 
---------------------Configuración keepalived----------------------------------
+-----------------------------# Instalamos Keepalived--------------------------------------
+sudo dnf install -y keepalived
 
+--------------------------------# Configuración para MASTER-------------------------------------
+
+
+sudo tee /etc/keepalived/keepalived.conf > /dev/null <<EOL
 vrrp_instance VI_1 {
-    state BACKUP
-    interface eth0  # Cambiar por tu interfaz de red (ip a)
+    state MASTER
+    interface eth0
     virtual_router_id 51
-    priority 50     # Prioridad más baja = BACKUP
+    priority 99
     advert_int 1
     authentication {
         auth_type PASS
         auth_pass 1234
     }
     virtual_ipaddress {
-        10.0.0.100/24  # IP flotante (VIP)
+        10.0.0.100/24
     }
 }
+EOL
 
+------------------------# Configuración para BACKUP------------------------------------------
 
+# sudo tee /etc/keepalived/keepalived.conf > /dev/null <<EOL
+# vrrp_instance VI_1 {
+#     state BACKUP
+#     interface eth0
+#     virtual_router_id 51
+#     priority 50
+#     advert_int 1
+#     authentication {
+#         auth_type PASS
+#         auth_pass 1234
+#     }
+#     virtual_ipaddress {
+#         10.0.0.100/24
+#     }
+# }
+# EOL
 
+----------------------------# Habilitamos y arrancamos Keepalived-----------------------------
+sudo systemctl enable keepalived
+sudo systemctl start keepalived
+sudo systemctl status keepalived
 
-
-
-
-
-
-
-
+----------------------------------# Reiniciamos Apache--------------------------------
+sudo systemctl restart httpd
+sudo systemctl status httpd
